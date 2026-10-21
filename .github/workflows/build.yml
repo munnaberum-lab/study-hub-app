@@ -3,6 +3,11 @@ on:
   push:
     branches: [main, master]
   workflow_dispatch:
+
+# Release banane ke liye write permission zaroori hai
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,7 +37,26 @@ jobs:
         run: cp -r android_icons/. android/app/src/main/res/
       - run: flutter pub get
       - run: flutter build apk --release --no-shrink
+
+      # pubspec.yaml ke version se APK ka naam aur release tag banao
+      - name: Version nikalo aur APK rename karo
+        id: ver
+        run: |
+          V=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d+ -f1)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          cp build/app/outputs/flutter-apk/app-release.apk "StudyHub-v$V.apk"
+
+      # Artifact (Actions page se download ke liye)
       - uses: actions/upload-artifact@v4
         with:
           name: StudyHub-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: StudyHub-v${{ steps.ver.outputs.version }}.apk
+
+      # Release (Releases page pe seedhi APK, zip ke bina)
+      - name: GitHub Release banao
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}-build${{ github.run_number }}
+          name: Study Hub v${{ steps.ver.outputs.version }} (build ${{ github.run_number }})
+          generate_release_notes: true
+          files: StudyHub-v${{ steps.ver.outputs.version }}.apk

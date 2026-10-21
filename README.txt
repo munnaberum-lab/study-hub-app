@@ -7,3 +7,7 @@ Study Hub - Flutter native app (backend: aapki Render site ki /api/v1 API)
 3) APK banana (phone se): is folder ke saare files (.github samet) naye GitHub repo mein upload karo,
    Actions -> Build APK -> Run workflow -> Artifacts se StudyHub-apk download karo.
    Ya laptop pe: flutter create --platforms=android . && flutter build apk --release
+
+4) Release: Actions build ke baad APK apne aap Releases section me aa jati hai
+   (StudyHub-vX.Y.Z.apk). Wahi link share karo. Settings -> Actions -> General ->
+   Workflow permissions me 'Read and write' on hona chahiye (agar release error aaye).
