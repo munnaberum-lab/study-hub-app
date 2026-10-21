@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Stack(fit: StackFit.expand, children: [
-                              Thumb(v.thumb),
+                              PosterImage(v.thumb),
                               Positioned(
                                 left: 0,
                                 right: 0,

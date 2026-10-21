@@ -132,7 +132,7 @@ class _WatchScreenState extends State<WatchScreen> {
                         ),
                       )
                     : Stack(fit: StackFit.expand, children: [
-                        Thumb(v.thumb),
+                        PosterImage(v.thumb),
                         const Center(child: CircularProgressIndicator()),
                       ]),
           ),

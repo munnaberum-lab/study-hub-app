@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'models.dart';
 import 'watch.dart';
 
-class Thumb extends StatelessWidget {
+class PosterImage extends StatelessWidget {
   final String url;
   final BoxFit fit;
-  const Thumb(this.url, {super.key, this.fit = BoxFit.cover});
+  const PosterImage(this.url, {super.key, this.fit = BoxFit.cover});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class VideoTile extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Stack(fit: StackFit.expand, children: [
-                Thumb(v.thumb),
+                PosterImage(v.thumb),
                 if (v.dur > 0)
                   Positioned(
                     right: 4,
