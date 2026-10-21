@@ -6,10 +6,55 @@ import 'library.dart';
 import 'shorts.dart';
 import 'videos.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Api.init();
-  runApp(const StudyHubApp());
+  // Koi error aaye to blank/atka hua screen ki jagah text dikhe.
+  ErrorWidget.builder = (details) => Material(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Text('Error: ${details.exceptionAsString()}', style: const TextStyle(color: Colors.red, fontSize: 13)),
+          ),
+        ),
+      );
+  runApp(const Boot());
+}
+
+/// Pehle turant screen dikhata hai, phir saved login load karta hai (kabhi atakta nahi).
+class Boot extends StatefulWidget {
+  const Boot({super.key});
+  @override
+  State<Boot> createState() => _BootState();
+}
+
+class _BootState extends State<Boot> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Api.init().timeout(const Duration(seconds: 5)).catchError((_) {}).whenComplete(() {
+      if (mounted) setState(() => _ready = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ready) return const StudyHubApp();
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 14),
+            Text('Study Hub'),
+          ]),
+        ),
+      ),
+    );
+  }
 }
 
 class StudyHubApp extends StatelessWidget {
