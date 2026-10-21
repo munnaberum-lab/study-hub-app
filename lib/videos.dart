@@ -18,9 +18,12 @@ class _VideosScreenState extends State<VideosScreen> {
     return SafeArea(
       child: Column(children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 4, 0),
+          padding: const EdgeInsets.fromLTRB(16, 10, 4, 4),
           child: Row(children: [
-            Text('Videos', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            ShaderMask(
+              shaderCallback: (r) => kGradient.createShader(r),
+              child: const Text('Videos', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white)),
+            ),
             const Spacer(),
             ChoiceChip(label: const Text('Naye'), selected: _sort == 'new', onSelected: (_) => setState(() => _sort = 'new')),
             const SizedBox(width: 6),
@@ -34,6 +37,7 @@ class _VideosScreenState extends State<VideosScreen> {
         Expanded(
           child: VideoListView(
             key: ValueKey(_sort),
+            cards: true,
             loader: (p) => Api.videos(kind: 'long', sort: _sort, page: p),
           ),
         ),

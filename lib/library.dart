@@ -17,28 +17,45 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (!Api.loggedIn) {
       return SafeArea(child: LoginView(onDone: () => setState(() {})));
     }
+    final name = Api.aid ?? '';
     return SafeArea(
       child: DefaultTabController(
         length: 2,
         child: Column(children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 4, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
             child: Row(children: [
-              Expanded(
-                child: Text('Library • ${Api.aid ?? ''}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(gradient: kGradient, shape: BoxShape.circle),
+                child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
               ),
-              TextButton.icon(
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                  const Text('Meri Library', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                ]),
+              ),
+              IconButton(
+                tooltip: 'Logout',
                 onPressed: () async {
                   await Api.logout();
                   if (mounted) setState(() {});
                 },
                 icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
               ),
             ]),
           ),
-          const TabBar(tabs: [Tab(text: 'Liked'), Tab(text: 'Playlists')]),
+          const TabBar(
+            indicatorColor: kAccent,
+            labelColor: kAccent,
+            unselectedLabelColor: Colors.white60,
+            tabs: [Tab(text: 'Liked'), Tab(text: 'Playlists')],
+          ),
           Expanded(
             child: TabBarView(children: [
               VideoListView(loader: (p) => Api.myLikes(page: p), emptyText: 'Abhi koi liked video nahi hai.'),
@@ -71,23 +88,34 @@ class _PlaylistsTabState extends State<_PlaylistsTab> {
         if (l.isEmpty) return const EmptyBox('Koi playlist nahi hai.\nVideo kholkar "Playlist" button se banao.');
         return RefreshIndicator(
           onRefresh: () async => setState(() => _f = Api.playlists()),
-          child: ListView(children: [
+          child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), children: [
             for (final p in l)
-              ListTile(
-                leading: const Icon(Icons.playlist_play),
-                title: Text('${p['name']}'),
-                subtitle: Text('${p['count']} videos'),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      appBar: AppBar(title: Text('${p['name']}')),
-                      body: VideoListView(
-                        loader: (page) async {
-                          final items = await Api.playlistVideos('${p['id']}');
-                          return PageDataSingle.of(items);
-                        },
-                        emptyText: 'Playlist khali hai.',
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C1B26),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(gradient: kGradient, borderRadius: BorderRadius.circular(12)),
+                    child: const Icon(Icons.playlist_play, color: Colors.white),
+                  ),
+                  title: Text('${p['name']}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text('${p['count']} videos'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: Text('${p['name']}')),
+                        body: VideoListView(
+                          loader: (page) async => PageDataSingle.of(await Api.playlistVideos('${p['id']}')),
+                          emptyText: 'Playlist khali hai.',
+                        ),
                       ),
                     ),
                   ),
@@ -129,45 +157,71 @@ class _LoginViewState extends State<LoginView> {
     try {
       await Api.login(_id.text.trim(), _pw.text);
       widget.onDone();
+      return;
     } catch (e) {
-      if (mounted) setState(() => _err = '$e');
+      final m = '$e';
+      if (mounted) setState(() => _err = m.length > 160 ? '${m.substring(0, 160)}...' : m);
     }
     if (mounted) setState(() => _busy = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(padding: const EdgeInsets.all(20), children: [
-      const SizedBox(height: 30),
-      const Icon(Icons.account_circle, size: 72, color: Colors.deepPurpleAccent),
-      const SizedBox(height: 8),
-      Text('Login karo', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
-      const SizedBox(height: 4),
-      const Text('Like, playlist aur premium ke liye', textAlign: TextAlign.center),
-      const SizedBox(height: 24),
+    return ListView(padding: const EdgeInsets.fromLTRB(24, 36, 24, 24), children: [
+      Center(
+        child: Container(
+          width: 84,
+          height: 84,
+          decoration: BoxDecoration(gradient: kGradient, borderRadius: BorderRadius.circular(26)),
+          child: const Icon(Icons.person_rounded, color: Colors.white, size: 46),
+        ),
+      ),
+      const SizedBox(height: 18),
+      Text('Welcome back', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+      const SizedBox(height: 6),
+      const Text('Like, playlist aur premium ke liye login karo', textAlign: TextAlign.center, style: TextStyle(color: Colors.white60)),
+      const SizedBox(height: 28),
       TextField(
         controller: _id,
         autocorrect: false,
-        decoration: const InputDecoration(labelText: 'Account ID', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+          labelText: 'Account ID',
+          prefixIcon: const Icon(Icons.alternate_email),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 14),
       TextField(
         controller: _pw,
         obscureText: true,
-        decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+          labelText: 'Password',
+          prefixIcon: const Icon(Icons.lock_outline),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        ),
         onSubmitted: (_) => _submit(),
       ),
-      if (_err != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text(_err!, style: const TextStyle(color: Colors.red))),
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: _busy ? null : _submit,
-        child: _busy ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Login'),
+      if (_err != null)
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Text(_err!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+        ),
+      const SizedBox(height: 20),
+      SizedBox(
+        height: 52,
+        child: FilledButton(
+          style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+          onPressed: _busy ? null : _submit,
+          child: _busy
+              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        ),
       ),
       const SizedBox(height: 16),
       if (Api.botName != null)
         TextButton(
           onPressed: () => launchUrl(Uri.parse('https://t.me/${Api.botName}'), mode: LaunchMode.externalApplication),
-          child: Text('Account nahi hai? Telegram bot @${Api.botName} se banao'),
+          child: Text('Account nahi hai? Telegram bot @${Api.botName} se banao', textAlign: TextAlign.center),
         ),
     ]);
   }

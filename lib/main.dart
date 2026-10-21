@@ -62,16 +62,37 @@ class StudyHubApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const seed = Color(0xFF7C4DFF);
+    const bg = Color(0xFF0E0E13);
+    const card = Color(0xFF1C1B26);
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF7C4DFF),
+      brightness: Brightness.dark,
+    ).copyWith(primary: const Color(0xFF9C6BFF), surface: bg);
+    final dark = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: bg,
+      appBarTheme: const AppBarTheme(backgroundColor: bg, elevation: 0, scrolledUnderElevation: 0),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF14131B),
+        indicatorColor: const Color(0x339C6BFF),
+        height: 66,
+        labelTextStyle: WidgetStateProperty.all(const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: card,
+        selectedColor: const Color(0x449C6BFF),
+        side: const BorderSide(color: Colors.white12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+    );
     return MaterialApp(
       title: kAppName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: seed)),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark),
-      ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
+      theme: dark,
+      darkTheme: dark,
       home: const Shell(),
     );
   }

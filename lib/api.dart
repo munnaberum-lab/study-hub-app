@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'models.dart';
 
@@ -23,22 +24,34 @@ class Api {
 
   static bool get loggedIn => token != null;
 
+  static Future<File> _authFile() async {
+    final d = await getApplicationSupportDirectory();
+    return File('${d.path}/auth.json');
+  }
+
   static Future<void> init() async {
-    final p = await SharedPreferences.getInstance();
-    token = p.getString('token');
-    aid = p.getString('aid');
+    try {
+      final f = await _authFile();
+      if (await f.exists()) {
+        final m = jsonDecode(await f.readAsString());
+        token = m['token'] as String?;
+        aid = m['aid'] as String?;
+      }
+    } catch (_) {}
   }
 
   static Future<void> _saveAuth(String? t, String? a) async {
     token = t;
     aid = a;
-    final p = await SharedPreferences.getInstance();
-    if (t == null) {
-      await p.remove('token');
-      await p.remove('aid');
-    } else {
-      await p.setString('token', t);
-      await p.setString('aid', a ?? '');
+    try {
+      final f = await _authFile();
+      if (t == null) {
+        if (await f.exists()) await f.delete();
+      } else {
+        await f.writeAsString(jsonEncode({'token': t, 'aid': a ?? ''}));
+      }
+    } catch (_) {
+      // save na ho paye to bhi is session mein login chalta rahega
     }
   }
 
